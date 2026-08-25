@@ -1,0 +1,11 @@
+[
+  {
+    "id": "anidb",
+    "type": "music",
+    "name": "Anikoto",
+    "subtitle": "Anikoto Extension for Echo",
+    "iconUrl": "https://anikototv.to/favicon.ico",
+    "url": "https://anikototv.to",
+    "updateUrl": "https://api.github.com/repos/itsmechinmoy/echo-anikoto/releases"
+  }
+]
