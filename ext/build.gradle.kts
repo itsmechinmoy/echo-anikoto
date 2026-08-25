@@ -9,19 +9,29 @@ plugins {
 dependencies {
     compileOnly(libs.echo.common)
     compileOnly(libs.kotlin.stdlib)
+    compileOnly(libs.kotlinx.serialization.json)
+
+    implementation(libs.jsoup)
+    implementation(libs.okhttp) {
+        exclude(group = "org.jetbrains.kotlin")
+        exclude(group = "org.jetbrains.kotlinx")
+    }
 
     testImplementation(libs.junit)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.echo.common)
+    testImplementation(libs.jsoup)
+    testImplementation(libs.kotlinx.serialization.json)
+    testImplementation(libs.okhttp)
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 // Extension properties goto `gradle.properties` to set values
@@ -61,6 +71,12 @@ tasks {
     shadowJar {
         archiveBaseName.set(extId)
         archiveVersion.set(verName)
+
+        // Exclude Kotlin stdlib — must be resolved from the host app's classloader at runtime.
+        exclude("kotlin/**")
+        exclude("kotlinx/coroutines/**")
+        exclude("META-INF/kotlin*")
+
         manifest {
             attributes(
                 mapOf(
@@ -86,6 +102,8 @@ tasks {
     }
 }
 
-fun execute(vararg command: String): String = providers.exec {
-    commandLine(*command)
-}.standardOutput.asText.get().trim()
+fun execute(vararg command: String): String = runCatching {
+    providers.exec {
+        commandLine(*command)
+    }.standardOutput.asText.get().trim()
+}.getOrElse { "1" }
