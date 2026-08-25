@@ -529,12 +529,49 @@ class AnikotoExtension :
             }
         }
 
+        val sortedStreamables = sortStreamables(streamables)
+        val subtitles = mutableListOf<Streamable>()
+
+        // Pre-fetch subtitles from the primary Sub server so player has subtitles ready immediately
+        val primarySubServer = sortedStreamables.firstOrNull { it.title?.contains("(Sub)") == true }
+            ?: sortedStreamables.firstOrNull { it.extras["isMapper"] != "true" }
+            ?: sortedStreamables.firstOrNull()
+
+        if (primarySubServer != null) {
+            try {
+                val embedUrl = if (primarySubServer.extras["isMapper"] == "true") {
+                    primarySubServer.extras["embedUrl"] ?: primarySubServer.id
+                } else {
+                    extractor.getEmbedData(baseUrl, primarySubServer.id, epUrl)?.url
+                }
+
+                if (!embedUrl.isNullOrBlank()) {
+                    val extracted = extractor.extract(embedUrl, primarySubServer.title ?: "Server", "$baseUrl/")
+                    if (extracted.subtitles.isNotEmpty()) {
+                        subtitles.addAll(extracted.subtitles)
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
+        val sortedSubtitles = sortSubtitles(subtitles.distinctBy { it.id })
+
         track.copy(
-            streamables = sortStreamables(streamables),
+            streamables = sortedStreamables + sortedSubtitles,
         )
     }
 
     override suspend fun loadStreamableMedia(streamable: Streamable, isDownload: Boolean): Streamable.Media = withContext(Dispatchers.IO) {
+        if (streamable.type == Streamable.MediaType.Subtitle) {
+            val subUrl = streamable.extras["url"] ?: streamable.id
+            val subType = when {
+                subUrl.endsWith(".srt", ignoreCase = true) -> Streamable.SubtitleType.SRT
+                subUrl.endsWith(".ass", ignoreCase = true) || subUrl.endsWith(".ssa", ignoreCase = true) -> Streamable.SubtitleType.ASS
+                else -> Streamable.SubtitleType.VTT
+            }
+            return@withContext Streamable.Media.Subtitle(url = subUrl, type = subType)
+        }
+
         val isMapper = streamable.extras["isMapper"] == "true"
         val serverName = streamable.extras["serverName"] ?: "Server"
         val epUrl = streamable.extras["epUrl"] ?: ""
@@ -749,6 +786,19 @@ class AnikotoExtension :
                 else if (s.quality > 0) 2
                 else 1 // Auto
             }.thenByDescending { it.quality }
+        )
+    }
+
+    private fun sortSubtitles(subtitles: List<Streamable>): List<Streamable> {
+        return subtitles.sortedWith(
+            compareByDescending<Streamable> { s ->
+                val title = s.title?.lowercase() ?: ""
+                when {
+                    title.startsWith("english") || title == "en" || title == "eng" -> 3
+                    title.contains("english") -> 2
+                    else -> 1
+                }
+            }
         )
     }
 
