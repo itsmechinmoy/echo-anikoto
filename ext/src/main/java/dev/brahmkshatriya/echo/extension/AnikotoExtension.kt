@@ -145,8 +145,10 @@ class AnikotoExtension :
         val tabs = mutableListOf(
             Tab("most-viewed", "Most Viewed", false),
             Tab("latest-updated", "Latest Updates", false),
-            Tab("top-airing", "Top Airing", false),
-            Tab("most-popular", "Most Popular", false),
+            Tab("new-release", "New Releases", false),
+            Tab("status/currently-airing", "Currently Airing", false),
+            Tab("status/finished-airing", "Finished Airing", false),
+            Tab("status/not-yet-aired", "Upcoming", false),
         )
 
         return Feed(tabs) { tab ->
@@ -393,10 +395,11 @@ class AnikotoExtension :
                     title = tooltip.substringBefore("Release:").substringBefore("Softsub").trim()
                 }
 
+                val cleanNum = epNum.removeSuffix(".0")
                 val fullTitle = when {
-                    !aniZipTitle.isNullOrBlank() -> "Episode $epNum: $aniZipTitle$fillerTag"
-                    title.isNotBlank() && title != "Episode $epNum" -> "Episode $epNum: $title$fillerTag"
-                    else -> "Episode $epNum$fillerTag"
+                    !aniZipTitle.isNullOrBlank() -> "$cleanNum. $aniZipTitle$fillerTag"
+                    title.isNotBlank() && !title.equals("Episode $epNum", ignoreCase = true) && title != epNum -> "$cleanNum. $title$fillerTag"
+                    else -> "Episode $cleanNum$fillerTag"
                 }
 
                 val epCover = toProxiedImageHolder(aniZipEp?.image, baseUrl) ?: album.cover
