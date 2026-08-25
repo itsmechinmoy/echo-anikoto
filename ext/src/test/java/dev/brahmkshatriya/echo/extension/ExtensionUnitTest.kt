@@ -117,6 +117,19 @@ class ExtensionUnitTest {
     }
 
     @Test
+    fun testSubtitles() = testIn("Testing Subtitles Extraction & Loading") {
+        if (extension !is TrackClient) error("TrackClient is not implemented")
+        val search = searchTrack()
+        val track = extension.loadTrack(search, false)
+        println("Subtitles count: ${track.subtitles.size}")
+        track.subtitles.forEach { sub ->
+            println("Subtitle: ${sub.title} -> ${sub.id}")
+            val loadedSub = extension.loadStreamableMedia(sub, false)
+            println("Loaded Subtitle: $loadedSub")
+        }
+    }
+
+    @Test
     fun testAlbumGet() = testIn("Testing Album Get") {
         if (extension !is SearchFeedClient) error("SearchFeedClient is not implemented")
         if (extension !is AlbumClient) error("AlbumClient is not implemented")
