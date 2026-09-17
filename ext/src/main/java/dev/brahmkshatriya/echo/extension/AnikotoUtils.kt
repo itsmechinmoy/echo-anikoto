@@ -133,11 +133,21 @@ object AnikotoUtils {
 
                         val nextLine = lines.getOrNull(i + 1)?.trim()
                         if (!nextLine.isNullOrEmpty() && !nextLine.startsWith("#")) {
+                            val query = m3u8Url.substringAfter("?", "").takeIf { it.isNotEmpty() }?.let { "?$it" } ?: ""
+                            val cleanBase = m3u8Url.substringBefore("?").substringBeforeLast("/")
                             val streamUrl = if (nextLine.startsWith("http")) {
                                 nextLine
+                            } else if (nextLine.startsWith("/")) {
+                                val origin = try {
+                                    val uri = java.net.URI(m3u8Url)
+                                    val port = if (uri.port != -1 && uri.port != 80 && uri.port != 443) ":${uri.port}" else ""
+                                    "${uri.scheme}://${uri.host}$port"
+                                } catch (_: Exception) {
+                                    cleanBase
+                                }
+                                "$origin$nextLine$query"
                             } else {
-                                val base = m3u8Url.substringBeforeLast("/")
-                                "$base/$nextLine"
+                                "$cleanBase/$nextLine$query"
                             }
 
                             val title = if (serverPrefix.isNotEmpty()) "$serverPrefix ($label)" else label
