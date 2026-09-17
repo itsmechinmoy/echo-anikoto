@@ -1,58 +1,45 @@
-# Echo Extension Template
+# Echo Anikoto Extension
 
-This is a template for creating an Echo extension. It includes a basic structure for the extension,
-so you do not have to start from scratch.
+An extension for [Echo](https://github.com/brahmkshatriya/echo) to browse, search, and stream anime from [Anikoto](https://anikototv.to) with multi-server streams, subtitle support, and AniSkip integration.
 
-## Getting Started
+## Features
 
-### 1. you can clone this repository.
-Clone this repository and name it as you want.
+- **Home Feed**: Browse Spotlight carousel, Trending Anime, Latest Episode Releases, Top Airing, Most Popular, Most Favorite, Latest Completed, and Anime Movies.
+- **Search & Filters**: Comprehensive search by title or keywords with filter options for Genre, Type (TV, Movie, OVA, ONA, Special), Season, Year, Status, and Sort Order.
+- **Quick Search**: Instant predictive search suggestions with poster artwork as you type.
+- **Rich Anime Details**: Poster art, synopsis, rating scores, airing status, seasons, studio, genres, alternative titles, external links (MyAnimeList, AniList, Kitsu), and trailers.
+- **Rich Episode Metadata**: Powered by [Ani.zip](https://api.ani.zip) for official episode titles, TVDB/TMDB screencap thumbnails, episode overviews, runtimes, and air dates.
+- **Multi-Server Streaming**: Support for multiple streaming sources including HD-1 (MegaPlay AES-256 decrypted streams with HMAC-SHA256 authenticated tokens), Vidstream, Vidcloud, and Kiwi-Stream.
+- **Multi-Quality & Sub/Dub**: Discrete and adaptive HLS video resolutions (`1080p`, `720p`, `480p`, `360p`, `Auto`) in Sub (Japanese) and Dub (English).
+- **Subtitles**: Multi-language subtitle tracks extracted directly from video manifests and stream providers.
+- **Video Chapters & Skip (AniSkip)**: Integrates `TrackChapterClient` with AniSkip to support Opening, Ending, Mixed OP/ED, and Recap timestamps, alongside server-provided intro/outro markers.
+- **Filler Detection**: Automatic episode filler detection with customizable tagging and filtering.
+- **Share**: Share direct links to Anikoto anime and episode pages.
 
-### 2. Configure the [gradle.properties](gradle.properties)
-The file will have the following properties:
-- `extType` - The type of the extension you want to create. It can be `music`, `tracker`
-  or `lyrics`. More information can be found
-  in [`Extension<*>`](https://github.com/brahmkshatriya/echo/blob/main/common/src/main/java/dev/brahmkshatriya/echo/common/Extension.kt#L33-L43)
-  java doc.
-- `extId` - The id of the extension. (Do not use spaces or special characters)
-- `extClass` - The class of the extension. This should be the class that you inherit client
-  interfaces to. For example in this template, it
-  is [`TestExtension`](ext/src/main/java/dev/brahmkshatriya/echo/extension/TestExtension.kt).
-- `extIcon` - (Optional) The icon of the extension. Will be cropped into a circle.
-- `extName` - The name of the extension.
-- `extDescription` - The description of the extension.
-- `extAuthor` - The author of the extension.
-- `extAuthorUrl` - (Optional) The author's website.
-- `extRepoUrl` - (Optional) The repository URL of the extension.
-- `extUpdateUrl` - (Optional) The update URL of the extension. The following urls are supported:
-    - Github : https://api.github.com/repos/your_username/your_extension_repo/releases
+## Settings
 
-### 3. Implement the extension
-Here's where the fun begins. Echo checks for `Client` interfaces that your extension implemented to know if your extension supports the feature or not.
+- **Preferred Domain**: Active mirror domain selection (`anikototv.to`, etc.).
+- **Preferred Quality**: Default playback resolution (`1080p`, `720p`, `480p`, `360p`, `Auto`).
+- **Preferred Server**: Default streaming server preference (`HD-1`, `Vidstream-2`, `VidCloud-1`, `Kiwi-Stream`, `VidPlay-1`).
+- **Preferred Audio/Sub**: Preferred audio language (`Sub (Japanese)`, `Dub (English)`, `Show All`).
+- **Show Filler Tag in Episode Titles**: Appends `(Filler)` to episode names when detected.
+- **Hide Filler Episodes**: Option to hide detected filler episodes from the episode list.
+- **Auto-Skip OP/ED Segments**: Automatically skips Opening and Ending intervals without prompting.
 
-- What are `Client` interfaces?
-  - These are interfaces that include functions your extension need to implement (`override fun`).
-  - For example, if you want to create a lyrics extension, you need to implement the `LyricsClient` interface.
-- What interfaces are available?
-  - By default, the [`TestExtension`](ext/src/main/java/dev/brahmkshatriya/echo/extension/TestExtension.kt) implements the `ExtensionClient` interface.
-  - Pro tip: Hover over the interface to see the documentation, Click on every one things that is clickable to dive deep into the rabbit hole.
-  - You can find all the available interfaces, for:
-      - Music Extension - [here](https://github.com/brahmkshatriya/echo/blob/main/common/src/main/java/dev/brahmkshatriya/echo/common/Extension.kt#L65-L117)
-      - Tracker Extension - [here](https://github.com/brahmkshatriya/echo/blob/main/common/src/main/java/dev/brahmkshatriya/echo/common/Extension.kt#L123-L137)
-      - Lyrics Extension - [here](https://github.com/brahmkshatriya/echo/blob/main/common/src/main/java/dev/brahmkshatriya/echo/common/Extension.kt#L143-L156)
+## Development & Testing
 
-The best example of how to implement an extension should be the [Spotify Extension](https://github.com/brahmkshatriya/echo-spotify-extension/blob/main/ext/src/main/java/dev/brahmkshatriya/echo/extension/SpotifyExtension.kt).
+### Local Testing
+Run the test suite locally:
+```bash
+./gradlew ext:test
+```
 
-### 4. Testing the extension
-There are two ways to test the extension:
-- **Local testing**: You can test the extension locally by running the tests in the [`ExtensionUnitTest`](ext/src/test/java/dev/brahmkshatriya/echo/extension/ExtensionUnitTest.kt) class.
-- **App testing**: You can test the extension in the Echo app by building & installing the `app` & then opening Echo app.
+### Build Extension JAR & Android APK
+```bash
+./gradlew ext:shadowJar assembleDebug
+```
 
-### 5. Publishing the extension
-This template includes a GitHub Actions workflow that will automatically build and publish the extension to GitHub releases when you make a new commit. You can find the workflow file [here](.github/workflows/build.yml).
-You need to do the following steps to publish the extension:
-- Enable `Read & write permissions` for workflows in the repository settings (Settings -> Actions -> General -> Workflow Permissions).
-- Generate a keystore file : https://developer.android.com/studio/publish/app-signing#generate-key
-- Add action secrets in the repository settings (Settings -> Secrets and variables -> Actions -> New repository secret):
-    - `KEYSTORE_B64` - The base64 encoded keystore file. [How to](https://stackoverflow.com/a/70396534)
-    - `PASSWORD` - The password of the keystore file.
+## Author
+
+- **Echo** / **itsmechinmoy** ([GitHub](https://github.com/itsmechinmoy))
+- Repository: [echo-anikoto](https://github.com/itsmechinmoy/echo-anikoto)
